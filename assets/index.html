@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>go-websockets</title>
+  </head>
+  <body>
+    <h1>go-websockets</h1>
+    <div>
+      <input id="input1" type="text" placeholder="...send something" />
+      <input
+        id="input1-submit"
+        type="button"
+        value="submit"
+        onclick="sendMessage()"
+      />
+    </div>
+    <div id="output1"></div>
+    <script>
+      let socket = new WebSocket("ws://127.0.0.1:5000/socket");
+      socket.onopen = function (e) {
+        printOutput("ev: opened connection");
+        printOutput("tx: client connected");
+        socket.send("client connected");
+      };
+
+      socket.onmessage = function (event) {
+        printOutput(`rx: ${event.data}`);
+      };
+
+      socket.onclose = function (event) {
+        if (event.wasClean) {
+          printOutput(
+            `ev: connection closed code=${event.code} ${event.reason}`
+          );
+        } else {
+          printOutput("ev: connection died");
+        }
+      };
+
+      socket.onerror = function (err) {
+        printOutput(`WebSocket error: ${error.message}`);
+      };
+
+      let sendMessage = function () {
+        let inputNode = document.getElementById("input1");
+        socket.send(inputNode.value);
+        printOutput("tx: " + inputNode.value);
+        inputNode.value = "";
+      };
+
+      let printOutput = function (message) {
+        console.log(message);
+        let spanNode = document.createElement("span");
+        spanNode.innerText = message;
+
+        let outputNode = document.getElementById("output1");
+        outputNode.insertBefore(
+          document.createElement("br"),
+          outputNode.firstChild
+        );
+        outputNode.insertBefore(spanNode, outputNode.firstChild);
+      };
+    </script>
+  </body>
+</html>
